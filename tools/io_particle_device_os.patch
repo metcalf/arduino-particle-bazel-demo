@@ -1,0 +1,55 @@
+diff --git user/inc/Arduino.h user/inc/Arduino.h
+index 408650b7d..b17d23b60 100644
+--- user/inc/Arduino.h
++++ user/inc/Arduino.h
+@@ -193,6 +193,9 @@ typedef volatile uint32_t RwReg;
+ // C++ only
+ #ifdef __cplusplus
+ 
++#ifndef __clang__
++// Under clang, "math.h" does not put isnan/isinf inside the std namespace so this would fail
++
+ #ifndef isnan
+ using std::isnan;
+ #endif
+@@ -201,6 +204,7 @@ using std::isnan;
+ using std::isinf;
+ #endif
+ 
++#endif // __clang__
+ 
+ // Hardware serial defines
+ 
+@@ -303,4 +307,3 @@ typedef USARTSerial HardwareSerial;
+ 
+ 
+ #endif	/* ARDUINO_H */
+-
+diff --git user/tests/unit/stubs/system_mode.cpp user/tests/unit/stubs/system_mode.cpp
+index 87db3f794..5cb7bab99 100644
+--- user/tests/unit/stubs/system_mode.cpp
++++ user/tests/unit/stubs/system_mode.cpp
+@@ -2,3 +2,7 @@
+ 
+ void set_system_mode(System_Mode_TypeDef mode) {
+ }
++
++void system_thread_set_state(spark::feature::State state, void*)
++{
++}
+diff --git wiring/src/spark_wiring_usbserial.cpp wiring/src/spark_wiring_usbserial.cpp
+index 012f3c223..edb305c89 100644
+--- wiring/src/spark_wiring_usbserial.cpp
++++ wiring/src/spark_wiring_usbserial.cpp
+@@ -24,6 +24,11 @@
+   ******************************************************************************
+  */
+ 
++#ifdef __clang__
++// Needed for std::{min,max} in Clang
++#include <algorithm>
++#endif
++
+ #include "spark_wiring_usbserial.h"
+ #include "platform_headers.h"
+ 
